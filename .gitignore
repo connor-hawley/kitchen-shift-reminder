@@ -133,3 +133,6 @@ dmypy.json
 
 # Editor files
 .idea/*
+
+# Custom
+contact_cards.csv
