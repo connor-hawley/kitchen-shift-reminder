@@ -130,3 +130,6 @@ dmypy.json
 
 # AWS credentials
 .aws/*
+
+# Editor files
+.idea/*
