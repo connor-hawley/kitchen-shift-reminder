@@ -3,7 +3,7 @@ sheet_id: '1paGFvsNkJTwi5ZQPxS5C1A5BxcIYpKrMLpvjqg3DTXU'
 tqx: 'out:csv'
 sheet: 'Sign Up'
 message: |-
-  'Hello, and thank you for signing up for a kitchen shift. This is a reminder that you have signed up to help at {shift_name}. Please be there at {shift_time} sharp.{dinner_option} Please reference the kitchen shift Google Doc sent or the Google Slides links below, but let {manager} know at {manager_number} if you have any questions.
+  Hello, and thank you for signing up for a kitchen shift. This is a reminder that you have signed up to help at {shift_name}. Please be there at {shift_time} sharp.{dinner_option} Please reference the kitchen shift Google Doc sent or the Google Slides links below, but let {manager} know at {manager_number} if you have any questions.
 
   Thank you!
 
@@ -11,7 +11,7 @@ message: |-
   {slides}
 
   Doc:
-  {docs}'
+  {docs}
 shift_times:
   lunch: '11 am'
   dinner: '5 pm'

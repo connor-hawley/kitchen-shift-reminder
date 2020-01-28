@@ -8,8 +8,30 @@ import boto3
 
 from collections import defaultdict
 
+def send_one_message(number, message, mailer_num):
+    sns = boto3.client('sns')
+    ## Create topic
+    topic_arn = sns.create_topic(
+        Name='kitchen-messenger-temp-{}'.format(mailer_num)
+    )['TopicArn']
+    ## Add one subscriber
+    response = sns.subscribe(
+        TopicArn=topic_arn,
+        Protocol='sms',
+        Endpoint='1' + str(number),
+    )
+    ## Send message
+    sns.publish(
+        TopicArn=topic_arn,
+        Message=message
+    )
+    ## Delete topic
+    sns.delete_topic(
+        TopicArn=topic_arn
+    )
+
+
 def get_and_send_messages():
-    params = None
     with open('config.yaml', 'r') as fh:
         params = yaml.load(fh, Loader=yaml.FullLoader)
     query_url = params['sheet_url'].format(id=params['sheet_id'], tqx=params['tqx'], sheet=params['sheet'])
@@ -31,7 +53,7 @@ def get_and_send_messages():
     messages = {}
     if not df.empty:
         day_of_week = ''
-        lunch_boys, dinner_boys = {}, defaultdict(list)
+        lunch_boy, dinner_boy1, dinner_boy2 = {}, {}, {}
         for row in df.iterrows():
             row = row[1]
             if row['Kitchen Shift'] == np.nan:
@@ -39,13 +61,17 @@ def get_and_send_messages():
 
             if 'Lunch' in row['Kitchen Shift']:
                 day_of_week = row['Kitchen Shift'].split()[0]
-                lunch_boys['Name'] = row['Name']
-                lunch_boys['Number'] = row['Phone Number']
+                lunch_boy['Name'] = row['Name']
+                lunch_boy['Number'] = row['Phone Number']
             elif 'Dinner' in row['Kitchen Shift']:
-                dinner_boys['Name'].append(row['Name'])
-                dinner_boys['Number'].append(row['Phone Number'])
+                if not dinner_boy1:
+                    dinner_boy1['Name'] = row['Name']
+                    dinner_boy1['Number'] = row['Phone Number']
+                else:
+                    dinner_boy2['Name'] = row['Name']
+                    dinner_boy2['Number'] = row['Phone Number']
 
-        if lunch_boys:
+        if lunch_boy:
             lunch_message = params['message'].format(
                 shift_name=day_of_week + ' Lunch',
                 shift_time=params['shift_times']['lunch'],
@@ -56,23 +82,15 @@ def get_and_send_messages():
                 docs=params['docs']
             )
 
-            if lunch_boys['Number'] != 0:
-                messages[lunch_boys['Number']] = lunch_message
+            if lunch_boy['Number'] != 0:
+                messages[lunch_boy['Number']] = lunch_message
 
-        if dinner_boys:
-            boys = dinner_boys['Name']
-            partner1 = params['dinner_option'].format(partner_name=boys[0])
-            partner2 = params['dinner_option'].format(partner_name=boys[1])
+        if dinner_boy1 and dinner_boy2:
+            boy1, boy2 = dinner_boy1['Name'], dinner_boy2['Name']
+            partner1 = params['dinner_option'].format(partner_name=boy2)
+            partner2 = params['dinner_option'].format(partner_name=boy1)
+
             dinner_message_1 = params['message'].format(
-                shift_name=day_of_week + ' Dinner',
-                shift_time=params['shift_times']['dinner'],
-                dinner_option=partner2,
-                manager=params['manager'],
-                manager_number=params['manager_number'],
-                slides=params['slides'],
-                docs=params['docs']
-            )
-            dinner_message_2 = params['message'].format(
                 shift_name=day_of_week + ' Dinner',
                 shift_time=params['shift_times']['dinner'],
                 dinner_option=partner1,
@@ -81,19 +99,25 @@ def get_and_send_messages():
                 slides=params['slides'],
                 docs=params['docs']
             )
+            dinner_message_2 = params['message'].format(
+                shift_name=day_of_week + ' Dinner',
+                shift_time=params['shift_times']['dinner'],
+                dinner_option=partner2,
+                manager=params['manager'],
+                manager_number=params['manager_number'],
+                slides=params['slides'],
+                docs=params['docs']
+            )
 
-            if dinner_boys['Number'][0] != 0:
-                messages[dinner_boys['Number'][0]] = dinner_message_1
-            if dinner_boys['Number'][1] != 0:
-                messages[dinner_boys['Number'][1]] = dinner_message_2
+            if dinner_boy1['Number'] != 0:
+                messages[dinner_boy1['Number']] = dinner_message_1
+            if dinner_boy2['Number'] != 0:
+                messages[dinner_boy2['Number']] = dinner_message_2
 
-
+    i = 0
     for number, message in messages.items():
-        sns = boto3.client('sns')
-        sns.publish(
-            TopicArn=params['sns-arn'],
-            Message=message
-        )
+        send_one_message(number, message, i)
+        i += 1
 
 if __name__ == '__main__':
     get_and_send_messages()
