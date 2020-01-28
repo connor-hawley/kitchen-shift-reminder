@@ -4,10 +4,11 @@ import io
 import numpy as np
 import pandas as pd
 import datetime
+import boto3
 
 from collections import defaultdict
 
-if __name__ == '__main__':
+def get_and_send_messages():
     params = None
     with open('config.yaml', 'r') as fh:
         params = yaml.load(fh, Loader=yaml.FullLoader)
@@ -86,6 +87,13 @@ if __name__ == '__main__':
             if dinner_boys['Number'][1] != 0:
                 messages[dinner_boys['Number'][1]] = dinner_message_2
 
+
     for number, message in messages.items():
-        print(number)
-        print(message)
+        sns = boto3.client('sns')
+        sns.publish(
+            TopicArn=params['sns-arn'],
+            Message=message
+        )
+
+if __name__ == '__main__':
+    get_and_send_messages()
