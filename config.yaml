@@ -1,0 +1,22 @@
+sheet_url: 'https://docs.google.com/spreadsheets/d/{id}/gviz/tq?tqx={tqx}&sheet={sheet}'
+sheet_id: '1paGFvsNkJTwi5ZQPxS5C1A5BxcIYpKrMLpvjqg3DTXU'
+tqx: 'out:csv'
+sheet: 'Sign Up'
+message: |-
+  'Hello, and thank you for signing up for a kitchen shift. This is a reminder that you have signed up to help at {shift_name}. Please be there at {shift_time} sharp.{dinner_option} Please reference the kitchen shift Google Doc sent or the Google Slides links below, but let {manager} know at {manager_number} if you have any questions.
+
+  Thank you!
+
+  Slides:
+  {slides}
+
+  Doc:
+  {docs}'
+shift_times:
+  lunch: '11 am'
+  dinner: '5 pm'
+dinner_option: ' {partner_name} will be your partner.'
+manager: 'Davis'
+manager_number: '(404) 805-4813'
+slides: 'https://docs.google.com/presentation/d/1ECyTi2X228QRivItwayVBv0OTltrA-Zt1E78N8Nvdvs'
+docs: 'https://docs.google.com/document/d/14RMSPjAd7RyCe2rA6k5q5ZKXZPimHY_Mfz4cVpg7sWg'
