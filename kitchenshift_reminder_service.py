@@ -6,8 +6,6 @@ import pandas as pd
 import datetime
 import boto3
 
-from collections import defaultdict
-
 def send_one_message(number, message, mailer_num):
     sns = boto3.client('sns')
     ## Create topic
@@ -69,8 +67,29 @@ def get_and_send_messages():
                     dinner_boy1['Number'] = row['Phone Number']
                 else:
                     dinner_boy2['Name'] = row['Name']
+
                     dinner_boy2['Number'] = row['Phone Number']
 
+
+        # Gets contact data
+        contacts = pd.read_csv(params['contact_file'])
+        contacts.columns = ['First', 'Last', 'Number']
+        contacts[['First', 'Last']] = contacts[['First', 'Last']].apply(
+            lambda x: pd.Series([x['First'].lower(), x['Last'].lower()]),
+            axis=1
+        )
+
+        def find_number(shift_worker):
+            names = shift_worker['Name'].split()
+            if len(names) == 2:
+                first, last = names[0].lower(), names[1].lower()
+                same_first = contacts.loc[contacts['First'] == first]
+                name_match = same_first.loc[same_first['Last'] == last]
+                if not name_match.empty:
+                    return name_match['Number'].iloc[0]
+            return None
+
+        # Formats messages
         if lunch_boy:
             lunch_message = params['message'].format(
                 shift_name=day_of_week + ' Lunch',
@@ -84,6 +103,14 @@ def get_and_send_messages():
 
             if lunch_boy['Number'] != 0:
                 messages[lunch_boy['Number']] = lunch_message
+            else:
+                found_number = find_number(lunch_boy)
+                if found_number is not None:
+                    messages[found_number] = lunch_message
+
+
+
+
 
         if dinner_boy1 and dinner_boy2:
             boy1, boy2 = dinner_boy1['Name'], dinner_boy2['Name']
@@ -111,8 +138,16 @@ def get_and_send_messages():
 
             if dinner_boy1['Number'] != 0:
                 messages[dinner_boy1['Number']] = dinner_message_1
+            else:
+                found_number = find_number(dinner_boy1)
+                if found_number is not None:
+                    messages[found_number] = dinner_message_1
             if dinner_boy2['Number'] != 0:
                 messages[dinner_boy2['Number']] = dinner_message_2
+            else:
+                found_number = find_number(dinner_boy2)
+                if found_number is not None:
+                    messages[found_number] = dinner_message_2
 
     i = 0
     for number, message in messages.items():

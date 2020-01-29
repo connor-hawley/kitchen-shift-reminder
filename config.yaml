@@ -2,6 +2,7 @@ sheet_url: 'https://docs.google.com/spreadsheets/d/{id}/gviz/tq?tqx={tqx}&sheet=
 sheet_id: '1paGFvsNkJTwi5ZQPxS5C1A5BxcIYpKrMLpvjqg3DTXU'
 tqx: 'out:csv'
 sheet: 'Sign Up'
+contact_file: 'contact_cards.csv'
 message: |-
   Hello, and thank you for signing up for a kitchen shift. This is a reminder that you have signed up to help at {shift_name}. Please be there at {shift_time} sharp.{dinner_option} Please reference the kitchen shift Google Doc sent or the Google Slides links below, but let {manager} know at {manager_number} if you have any questions.
 
